@@ -1,0 +1,196 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define TAM 3
+
+char tabuleiro[TAM][TAM];
+int posicoesJogador1[3], posicoesJogador2[3];
+int numJogadas1 = 0, numJogadas2 = 0;
+int i, j, linha, coluna, novaPos;
+int jogadaValida;
+
+void inicializarTabuleiro() {
+    for (i = 0; i < TAM; i++) {
+        for (j = 0; j < TAM; j++) {
+            tabuleiro[i][j] = ' ';
+        }
+    }
+}
+
+void imprimirTabuleiro() {
+    printf("\nTabuleiro:\n");
+    for (i = 0; i < TAM; i++) {
+        for (j = 0; j < TAM; j++) {
+            printf(" %c ", tabuleiro[i][j]);
+            if (j < TAM - 1) printf("|");
+        }
+        printf("\n");
+        if (i < TAM - 1) printf("---|---|---\n");
+    }
+}
+
+int verificarVitoria(char jogador) {
+    for (i = 0; i < TAM; i++) {
+        if (tabuleiro[i][0] == jogador && tabuleiro[i][1] == jogador && tabuleiro[i][2] == jogador) {
+            return 1;
+        }
+    }
+    for (j = 0; j < TAM; j++) {
+        if (tabuleiro[0][j] == jogador && tabuleiro[1][j] == jogador && tabuleiro[2][j] == jogador) {
+            return 1;
+        }
+    }
+    if (tabuleiro[0][0] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][2] == jogador) {
+        return 1;
+    }
+    if (tabuleiro[0][2] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][0] == jogador) {
+        return 1;
+    }
+
+    return 0;
+}
+
+void moverPeca(int jogador, int movimento) {
+    if (movimento <= 3) return;
+
+    if (jogador == 0) {
+        i = posicoesJogador1[0] / TAM;
+        j = posicoesJogador1[0] % TAM;
+        tabuleiro[i][j] = ' ';
+
+        printf("Jogador 1, mova sua primeira peca para a posicao (0-8): ");
+        scanf("%d", &novaPos);
+
+        i = novaPos / TAM;
+        j = novaPos % TAM;
+        tabuleiro[i][j] = 'X';
+        posicoesJogador1[0] = novaPos;
+    }
+    else if (jogador == 1) {
+        i = posicoesJogador2[0] / TAM;
+        j = posicoesJogador2[0] % TAM;
+        tabuleiro[i][j] = ' ';
+
+        printf("Jogador 2, mova sua primeira peca para a posicao (0-8): ");
+        scanf("%d", &novaPos);
+
+        i = novaPos / TAM;
+        j = novaPos % TAM;
+        tabuleiro[i][j] = 'O';
+        posicoesJogador2[0] = novaPos;
+    }
+}
+
+void jogarComputador() {
+    jogadaValida = 0;
+
+    while (!jogadaValida) {
+        linha = rand() % TAM;
+        coluna = rand() % TAM;
+
+        if (tabuleiro[linha][coluna] == ' ') {
+            tabuleiro[linha][coluna] = 'O';
+            jogadaValida = 1;
+            printf("Computador fez sua jogada na posicao (%d, %d).\n", linha, coluna);
+        }
+    }
+}
+
+void jogarJogador(int jogadorAtual, char simbolo) {
+    printf("Jogador %d (%c), faca sua jogada (linha e coluna): ", jogadorAtual + 1, simbolo);
+    scanf("%d %d", &linha, &coluna);
+
+    if (linha < 0 || linha >= TAM || coluna < 0 || coluna >= TAM || tabuleiro[linha][coluna] != ' ') {
+        printf("Jogada invalida! Tente novamente.\n");
+        jogarJogador(jogadorAtual, simbolo);
+    } else {
+        tabuleiro[linha][coluna] = simbolo;
+    }
+}
+
+void mostrarMenu() {
+    printf("Bem-vindo ao Jogo da Velha 2.0!\n");
+    printf("Escolha uma opcao:\n");
+    printf("1. Jogar contra outro jogador\n");
+    printf("2. Jogar contra o computador\n");
+    printf("3. Ajuda\n");
+    printf("4. Autores\n");
+    printf("5. Sair\n");
+    printf("Escolha: ");
+}
+
+void mostrarAjuda() {
+    printf("\nAjuda - Como jogar Jogo da Velha 2.0:\n");
+    printf("1. O jogo e jogado em um tabuleiro 3x3.\n");
+    printf("2. Cada jogador comeca com 3 pecas. O primeiro jogador usa 'X' e o segundo jogador usa 'O'.\n");
+    printf("3. Os jogadores devem colocar suas pecas em espacos vazios do tabuleiro.\n");
+    printf("4. Quando um jogador coloca a 4a peca, ele deve mover a 1a peca colocada.\n");
+    printf("5. Quando um jogador coloca a 5a peca, ele deve mover a 2a peca colocada, e assim por diante.\n");
+    printf("6. Nao e permitido colocar a peca no mesmo local onde ela ja estava.\n");
+    printf("7. O jogo termina quando um dos jogadores consegue alinhar suas pecas em uma linha, coluna ou diagonal.\n");
+    printf("8. O jogo tambem termina se o tabuleiro estiver completo e ninguem tiver vencido.\n\n");
+}
+
+void mostrarAutores() {
+    printf("\nAutores:\n");
+    printf("Victor Faccine Farias\n\n");
+}
+
+int main() {
+    int jogadorAtual = 0;
+    int totalJogadas = 0;
+    int modoDeJogo;
+
+    srand(time(NULL));
+
+    mostrarMenu();
+    scanf("%d", &modoDeJogo);
+
+    if (modoDeJogo == 3) {
+        mostrarAjuda();
+    } else if (modoDeJogo == 4) {
+        mostrarAutores();
+    } else if (modoDeJogo == 5) {
+        printf("Saindo do jogo...\n");
+        return 0;
+    }
+
+    if (modoDeJogo == 3 || modoDeJogo == 4 || modoDeJogo == 5) {
+        return 0;
+    }
+
+    inicializarTabuleiro();
+    imprimirTabuleiro();
+
+    while (totalJogadas < 9) {
+        char simbolo = (jogadorAtual == 0) ? 'X' : 'O';
+
+        if (modoDeJogo == 1 || (modoDeJogo == 2 && jogadorAtual == 0)) {
+            jogarJogador(jogadorAtual, simbolo);
+        } else if (modoDeJogo == 2 && jogadorAtual == 1) {
+            jogarComputador();
+        }
+
+        if (verificarVitoria(simbolo)) {
+            imprimirTabuleiro();
+            if (modoDeJogo == 1) {
+                printf("Jogador %d (%c) venceu!\n", jogadorAtual + 1, simbolo);
+            } else {
+                if (jogadorAtual == 0) {
+                    printf("Voce (Jogador 1) venceu!\n");
+                } else {
+                    printf("Computador venceu!\n");
+                }
+            }
+            break;
+        }
+
+        imprimirTabuleiro();
+        jogadorAtual = 1 - jogadorAtual;
+        totalJogadas++;
+    }
+
+    return 0;
+}
+
