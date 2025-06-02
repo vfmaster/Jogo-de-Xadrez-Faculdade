@@ -7,7 +7,7 @@
 char tabuleiro[TAM][TAM];
 int posicoesJogador1[3], posicoesJogador2[3];
 int numJogadas1 = 0, numJogadas2 = 0;
-int i, j, linha, coluna, novaPos;
+int i, j, linha, coluna;
 int jogadaValida;
 
 void inicializarTabuleiro() {
@@ -16,6 +16,8 @@ void inicializarTabuleiro() {
             tabuleiro[i][j] = ' ';
         }
     }
+    numJogadas1 = 0;
+    numJogadas2 = 0;
 }
 
 void imprimirTabuleiro() {
@@ -32,59 +34,97 @@ void imprimirTabuleiro() {
 
 int verificarVitoria(char jogador) {
     for (i = 0; i < TAM; i++) {
-        if (tabuleiro[i][0] == jogador && tabuleiro[i][1] == jogador && tabuleiro[i][2] == jogador) {
+        if (tabuleiro[i][0] == jogador && tabuleiro[i][1] == jogador && tabuleiro[i][2] == jogador)
             return 1;
-        }
     }
     for (j = 0; j < TAM; j++) {
-        if (tabuleiro[0][j] == jogador && tabuleiro[1][j] == jogador && tabuleiro[2][j] == jogador) {
+        if (tabuleiro[0][j] == jogador && tabuleiro[1][j] == jogador && tabuleiro[2][j] == jogador)
             return 1;
-        }
     }
-    if (tabuleiro[0][0] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][2] == jogador) {
+    if (tabuleiro[0][0] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][2] == jogador)
         return 1;
-    }
-    if (tabuleiro[0][2] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][0] == jogador) {
+    if (tabuleiro[0][2] == jogador && tabuleiro[1][1] == jogador && tabuleiro[2][0] == jogador)
         return 1;
-    }
 
     return 0;
 }
 
-void moverPeca(int jogador, int movimento) {
-    if (movimento <= 3) return;
+void moverPeca(int jogador) {
+    int novaLinha, novaColuna, escolha;
+    int* posicoes = (jogador == 0) ? posicoesJogador1 : posicoesJogador2;
+    char simbolo = (jogador == 0) ? 'X' : 'O';
 
-    if (jogador == 0) {
-        i = posicoesJogador1[0] / TAM;
-        j = posicoesJogador1[0] % TAM;
-        tabuleiro[i][j] = ' ';
-
-        printf("Jogador 1, mova sua primeira peca para a posicao (0-8): ");
-        scanf("%d", &novaPos);
-
-        i = novaPos / TAM;
-        j = novaPos % TAM;
-        tabuleiro[i][j] = 'X';
-        posicoesJogador1[0] = novaPos;
+    printf("Suas pecas estao nas posicoes:\n");
+    int k;
+    for (k = 0; k < 3; k++) {
+        int l = posicoes[k] / TAM;
+        int c = posicoes[k] % TAM;
+        printf("%d: (%d, %d)\n", k, l, c);
     }
-    else if (jogador == 1) {
-        i = posicoesJogador2[0] / TAM;
-        j = posicoesJogador2[0] % TAM;
-        tabuleiro[i][j] = ' ';
 
-        printf("Jogador 2, mova sua primeira peca para a posicao (0-8): ");
-        scanf("%d", &novaPos);
+    printf("Escolha o numero da peca que deseja mover (0, 1 ou 2): ");
+    scanf("%d", &escolha);
 
-        i = novaPos / TAM;
-        j = novaPos % TAM;
-        tabuleiro[i][j] = 'O';
-        posicoesJogador2[0] = novaPos;
+    if (escolha < 0 || escolha > 2) {
+        printf("Escolha invalida! Tente novamente.\n");
+        moverPeca(jogador);
+        return;
+    }
+
+    printf("Digite a nova linha (0-2): ");
+    scanf("%d", &novaLinha);
+    printf("Digite a nova coluna (0-2): ");
+    scanf("%d", &novaColuna);
+
+    if (novaLinha < 0 || novaLinha >= TAM || novaColuna < 0 || novaColuna >= TAM || tabuleiro[novaLinha][novaColuna] != ' ') {
+        printf("Posicao invalida ou ocupada! Tente novamente.\n");
+        moverPeca(jogador);
+        return;
+    }
+
+    int velhaLinha = posicoes[escolha] / TAM;
+    int velhaColuna = posicoes[escolha] % TAM;
+    tabuleiro[velhaLinha][velhaColuna] = ' ';
+
+    tabuleiro[novaLinha][novaColuna] = simbolo;
+    posicoes[escolha] = novaLinha * TAM + novaColuna;
+}
+
+
+
+
+
+void jogarJogador(int jogadorAtual, char simbolo) {
+    if ((jogadorAtual == 0 && numJogadas1 >= 3) || (jogadorAtual == 1 && numJogadas2 >= 3)) {
+        printf("Jogador %d (%c), faca sua movimentacao.\n", jogadorAtual + 1, simbolo);
+        moverPeca(jogadorAtual);
+        return;
+    }
+
+    printf("Jogador %d (%c), faca sua jogada.\n", jogadorAtual + 1, simbolo);
+    printf("Digite a linha (0 a 2): ");
+    scanf("%d", &linha);
+    printf("Digite a coluna (0 a 2): ");
+    scanf("%d", &coluna);
+
+    if (linha < 0 || linha >= TAM || coluna < 0 || coluna >= TAM || tabuleiro[linha][coluna] != ' ') {
+        printf("Jogada invalida! Tente novamente.\n");
+        system("pause");
+        jogarJogador(jogadorAtual, simbolo);
+    } else {
+        int pos = linha * TAM + coluna;
+        tabuleiro[linha][coluna] = simbolo;
+        if (jogadorAtual == 0) {
+            posicoesJogador1[numJogadas1++] = pos;
+        } else {
+            posicoesJogador2[numJogadas2++] = pos;
+        }
     }
 }
 
+
 void jogarComputador() {
     jogadaValida = 0;
-
     while (!jogadaValida) {
         linha = rand() % TAM;
         coluna = rand() % TAM;
@@ -93,19 +133,8 @@ void jogarComputador() {
             tabuleiro[linha][coluna] = 'O';
             jogadaValida = 1;
             printf("Computador fez sua jogada na posicao (%d, %d).\n", linha, coluna);
+            system("pause");
         }
-    }
-}
-
-void jogarJogador(int jogadorAtual, char simbolo) {
-    printf("Jogador %d (%c), faca sua jogada (linha e coluna): ", jogadorAtual + 1, simbolo);
-    scanf("%d %d", &linha, &coluna);
-
-    if (linha < 0 || linha >= TAM || coluna < 0 || coluna >= TAM || tabuleiro[linha][coluna] != ' ') {
-        printf("Jogada invalida! Tente novamente.\n");
-        jogarJogador(jogadorAtual, simbolo);
-    } else {
-        tabuleiro[linha][coluna] = simbolo;
     }
 }
 
@@ -125,70 +154,74 @@ void mostrarAjuda() {
     printf("1. O jogo e jogado em um tabuleiro 3x3.\n");
     printf("2. Cada jogador comeca com 3 pecas. O primeiro jogador usa 'X' e o segundo jogador usa 'O'.\n");
     printf("3. Os jogadores devem colocar suas pecas em espacos vazios do tabuleiro.\n");
-    printf("4. Quando um jogador coloca a 4a peca, ele deve mover a 1a peca colocada.\n");
-    printf("5. Quando um jogador coloca a 5a peca, ele deve mover a 2a peca colocada, e assim por diante.\n");
-    printf("6. Nao e permitido colocar a peca no mesmo local onde ela ja estava.\n");
-    printf("7. O jogo termina quando um dos jogadores consegue alinhar suas pecas em uma linha, coluna ou diagonal.\n");
-    printf("8. O jogo tambem termina se o tabuleiro estiver completo e ninguem tiver vencido.\n\n");
+    printf("4. Quando o jogador ja tiver 3 pecas, ele deve mover uma das suas pecas existentes.\n");
+    printf("5. O jogo termina quando um dos jogadores consegue alinhar suas pecas.\n\n");
+    system("pause");
 }
 
 void mostrarAutores() {
     printf("\nAutores:\n");
     printf("Victor Faccine Farias\n\n");
+    system("pause");
 }
 
 int main() {
-    int jogadorAtual = 0;
-    int totalJogadas = 0;
+    int jogadorAtual;
     int modoDeJogo;
 
     srand(time(NULL));
 
-    mostrarMenu();
-    scanf("%d", &modoDeJogo);
+    while (1) {
+        system("cls");
+        mostrarMenu();
+        scanf("%d", &modoDeJogo);
 
-    if (modoDeJogo == 3) {
-        mostrarAjuda();
-    } else if (modoDeJogo == 4) {
-        mostrarAutores();
-    } else if (modoDeJogo == 5) {
-        printf("Saindo do jogo...\n");
-        return 0;
-    }
-
-    if (modoDeJogo == 3 || modoDeJogo == 4 || modoDeJogo == 5) {
-        return 0;
-    }
-
-    inicializarTabuleiro();
-    imprimirTabuleiro();
-
-    while (totalJogadas < 9) {
-        char simbolo = (jogadorAtual == 0) ? 'X' : 'O';
-
-        if (modoDeJogo == 1 || (modoDeJogo == 2 && jogadorAtual == 0)) {
-            jogarJogador(jogadorAtual, simbolo);
-        } else if (modoDeJogo == 2 && jogadorAtual == 1) {
-            jogarComputador();
+        if (modoDeJogo == 3) {
+            system("cls");
+            mostrarAjuda();
+            continue;
+        } else if (modoDeJogo == 4) {
+            system("cls");
+            mostrarAutores();
+            continue;
+        } else if (modoDeJogo == 5) {
+            printf("Saindo do jogo...\n");
+            return 0;
         }
 
-        if (verificarVitoria(simbolo)) {
+        inicializarTabuleiro();
+        jogadorAtual = 0;
+
+        while (1) {
+            system("cls");
             imprimirTabuleiro();
-            if (modoDeJogo == 1) {
-                printf("Jogador %d (%c) venceu!\n", jogadorAtual + 1, simbolo);
-            } else {
-                if (jogadorAtual == 0) {
-                    printf("Voce (Jogador 1) venceu!\n");
-                } else {
-                    printf("Computador venceu!\n");
-                }
-            }
-            break;
-        }
 
-        imprimirTabuleiro();
-        jogadorAtual = 1 - jogadorAtual;
-        totalJogadas++;
+            char simbolo = (jogadorAtual == 0) ? 'X' : 'O';
+
+            if (modoDeJogo == 1 || (modoDeJogo == 2 && jogadorAtual == 0)) {
+                jogarJogador(jogadorAtual, simbolo);
+            } else if (modoDeJogo == 2 && jogadorAtual == 1) {
+                jogarComputador();
+            }
+
+            if (verificarVitoria(simbolo)) {
+                system("cls");
+                imprimirTabuleiro();
+                if (modoDeJogo == 1) {
+                    printf("Jogador %d (%c) venceu!\n", jogadorAtual + 1, simbolo);
+                } else {
+                    if (jogadorAtual == 0) {
+                        printf("Voce (Jogador 1) venceu!\n");
+                    } else {
+                        printf("Computador venceu!\n");
+                    }
+                }
+                system("pause");
+                break;
+            }
+
+            jogadorAtual = 1 - jogadorAtual;
+        }
     }
 
     return 0;
